@@ -50,16 +50,16 @@
 			***************************************************************************************************************
 			***replace the nurical with label values 
 			foreach varr of varlist `var'__? { 
-			local koko: var lab `varr'
-			local lolo=(strlen("`koko'")-strpos("`koko'", "=="))  
-			local lo= substr("`koko'",-`lolo'+1,.)
-			if "`lo'"=="         .s" | "`lo'"=="      ."  lab var `varr' "Missing"
-			else lab var `varr' "`lo'"
-			local lll = "`:word `mmm' of `nume''"
-			local vax =ustrregexra("`varr'",substr("`varr'",`lol',.),"`lll'")
-			cap noi qui rename `varr' `vax' 
+				local koko: var lab `varr'
+				local lolo=(strlen("`koko'")-strpos("`koko'", "=="))  
+				local lo= substr("`koko'",-`lolo'+1,.)
+				if "`lo'"=="         .s" | "`lo'"=="      ."  lab var `varr' "Missing"
+				else lab var `varr' "`lo'"
+				local lll = "`:word `mmm' of `nume''"
+				local vax =ustrregexra("`varr'",substr("`varr'",`lol',.),"`lll'")
+				cap noi qui rename `varr' `vax' 
 
-			local `++mmm'    
+				local `++mmm'    
 
 			}
 			***************************************************************************************************************
