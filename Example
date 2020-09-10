@@ -1,0 +1,9 @@
+sysuse voter.dta, clear
+###tabulation of Polls candidates. 
+1992	Freq.	Percent	Cum.
+Clinton	 5	33.33	33.33
+Bush	   5	33.33	66.67
+Perot	   5	33.33	100.00
+Total	   15	    100.00
+
+tabgen candidat /*Generates varaibles with value labels as variable labels for the new variables*/
