@@ -1,0 +1,67 @@
+/*
+Created by: Waiguru Muriuki
+Email: waigurusamuel@gmail.com
+Date : 20/05/2020
+*/
+
+              cap program drop tabgen
+              program define tabgen, 
+                      pause on
+                      version 15.0
+                      syntax varlist (max=1) [,mi ///
+                      missing ]
+                      local var `varlist'
+      ***************************************************************************************************************
+                     ***Checking whether the primary variable is string or numeric if string exit
+                     qui destring `var',replace 
+                    if substr("`:type `var''" , 1, 3)== "str" {
+                      di as err "Only works with numeric variables, preferably with value labels"
+                      exit 198
+                    } 
+                  
+      ****************************************************************************************************************
+                     ***Confirming whether the variable, used for this program, exist in the data set. 
+                              forval lo=1(1)9{
+                    foreach varo in `var'__`lo' `var'_`lo' {
+                        capture confirm variable `varo', exact
+                        if _rc==0 {
+                                          di in red "Drop and regenerate the `var'_? variables"
+                                                     exit 198
+                                                      }
+                                                     else {
+                                          }
+                           }   
+                       } 
+
+      ****************************************************************************************************************   
+                    ***Generating variables with double underscore                          
+                      qui ta `var'
+                      if r(r)>9 {
+                        di in red "Used with a variable with less than 10 value levels"
+                      }
+                      else {
+                                                             
+                      if "`mi'"=="" & "`missing'"=="" ta `var', gen(`var'__) 
+                      else ta `var', gen(`var'__)  mi
+                              qui levelsof `var', local(nume)
+                                      local nume = subinstr("`nume'", "-", "",.)
+                                      local lol=strlen("`var'")+2
+                                      local mmm=1
+      ***************************************************************************************************************
+                  ***replace the nurical with label values 
+                foreach varr of varlist `var'__? { 
+                                                      local koko: var lab `varr'
+                                                      local lolo=(strlen("`koko'")-strpos("`koko'", "=="))  
+                                                      local lo= substr("`koko'",-`lolo'+1,.)
+                                              if "`lo'"=="         .s" | "`lo'"=="      ."  lab var `varr' "Missing"
+                                              else lab var `varr' "`lo'"
+                                                      local lll = "`:word `mmm' of `nume''"
+                                                      local vax =ustrregexra("`varr'",substr("`varr'",`lol',.),"`lll'")
+                                           cap noi qui rename `varr' `vax' 
+               
+                                                              local `++mmm'    
+             
+               }
+      ***************************************************************************************************************
+      }
+      end 
