@@ -64,15 +64,4 @@
 			}
 			***************************************************************************************************************
 			}
-			end 
-
-			qui summ `var' if polaff==`P'
-			mat G[`r', `P']=r(mean)
-			return clear
-		}
-		qui summ `var' 
-		mat G[`r',`=`:word count $vals'+1']=r(mean)
-		mat G[`r',`=`:word count $vals'+2']=r(N)
-		return clear
-		local `++r'
-	}
+			end
