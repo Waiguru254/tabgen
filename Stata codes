@@ -1,7 +1,7 @@
 	/*
 	Created by: Waiguru Muriuki
 	Email: waigurusamuel@gmail.com
-	Date : 11/03/2021
+	Date : 16/03/2021
 	Affiliation: Evidence Action
 	*/
 	cap program drop tabgen
@@ -9,8 +9,25 @@
 	pause on
 	version 15.0
 	syntax varlist (max=1) [,mi ///
-	missing ]
-		local var `varlist'
+	missing ///
+	range(string) ///
+	VALuelabel(string)]
+  		local var `varlist'
+		if "`range'" == "" {
+		    local range 1(1)20
+		    }
+
+		if "`other'" == "" {
+		local other -996
+		}
+
+		if "`missing'" == "" {
+		local missing -998 -999
+		}
+		qui labellist `var'
+  		if "`valuelabel'" == "" {
+		local valuelabel "`r(lblname)'"
+		}
 		***************************************************************************************************************
 		***Checking whether the primary variable is string or numeric if string exit
 		qui destring `var',replace 
@@ -21,8 +38,8 @@
 
 		****************************************************************************************************************
 		***Confirming whether the variable, used for this program, exist in the data set. 
-		forval lo=1(1)50 {
-			foreach varo in `var'__`lo' `var'_`lo' {
+		forval lo=1(1)20 {
+			foreach varo in `var'_`lo' `var'_`lo' {
 				capture confirm variable `varo', exact
 				if _rc==0 {
 					di in red "Drop and regenerate the `var'_? variables"
@@ -34,15 +51,47 @@
 
 		****************************************************************************************************************   
 
-		if "`mi'"=="" & "`missing'"=="" ta `var', gen(`var'_) 
-		else ta `var', gen(`var'_)  mi
-		qui isvar `var'_? `var'_?? `var'_???
-		foreach vard of varlist `r(varlist)' {
-			local vv: var lab `vard'
-			local fff= subinstr("`vv'","`var'==", "", .) 
-			if "`fff'"=="         .s" | "`fff'"=="      ."  lab var `vard' "Missing"
-			else lab var `vard' "`fff'"
-		}
+        forval x=`range'{                                                     
+                qui gen `var'_`x' = .
+                qui replace `var'_`x' = 0 if `var'!=.
+                qui replace `var'_`x' = 1 if inlist( `var',`x')
+                if "`valuelabel'" != "" {
+                        local varname "`:label `valuelabel' `x''"
+                        label var `var'_`x' "`varname'" 
+                        }
+				}
+**************************************************************************************************************************
 
-	***************************************************************************************************************
+        foreach x in `other' {                
+                local abs_x = subinstr("`x'", "-", "", 1)               
+                qui gen `var'_`abs_x' = .
+                qui replace `var'_`abs_x' = 0 if `var'!=.
+                qui replace `var'_`abs_x' = 1 if inlist( `var',`other')
+                if "`valuelabel'" != "" {
+                        local varname "`:label `valuelabel' `x''"
+                        label var `var'_`abs_x' "`varname'"
+                        }
+                }
+
+****************************************************************************************************************************
+        foreach xx in `missing' {                
+                local abs_x = subinstr("`xx'", "-", "", 1)               
+                qui gen `var'_`abs_x' = .
+                qui replace `var'_`abs_x' = 0 if `var'!=.
+                qui replace `var'_`abs_x' = 1 if inlist( `var',`xx')
+                if "`valuelabel'" != "" {
+                        local varname "`:label `valuelabel' `xx''"
+                        label var `var'_`abs_x' "`varname'"
+                        }
+                }
+***************************************************************************************************************
+
+        foreach vv of varlist `var'_* {
+                        qui sum `vv'
+                        if r(mean) == 0 & r(max) == 0 & r(min) == 0 {
+                        drop `vv'
+                        di in green "`vv' dropped because all values were zero or missing"
+                        }
+                }
+ 
 	end 
